@@ -55,6 +55,6 @@ in the target folder.
 ### Setting LateLogger up
 Set up LateLogger by running
 ```bash
-python setup.py
+python setup
 ```
 Answer the questions in the prompt, and you're ready to go!

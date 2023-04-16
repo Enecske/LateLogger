@@ -1,0 +1,143 @@
+import sys
+import shlex
+import cv2
+from mysql.connector.errors import ProgrammingError
+from mysql.connector import errorcode
+
+import face_recognition
+import scripts.face_registry as face_registry
+import scripts.mysql_manager as mysql_manager
+
+def print_list():
+    try:
+        students = mysql_manager.get_students(classname)
+    except ProgrammingError as e:
+        if e.errno == errorcode.ER_NO_SUCH_TABLE:
+            print(f"[Argument Error] Class {sys.argv[1]} doesn't exist, use 'python create_class' to create one")
+        else:
+            print(f"[MySQL Error] {e}")
+        exit(1)
+
+    length = 4
+    table = ""
+
+    for id, name in students:
+        if len(name) > length: length = len(name)
+        table += f"{id}\t{name}\n"
+
+    print("\nID\tName\n" + '─' * (length + 8))
+    print(table)
+
+def capture_face():
+    print("Press SPACE to capture, R to retry, S to save and Q to quit")
+
+    video_capture = cv2.VideoCapture(0)
+
+    is_captured = False
+
+    while True:
+        if not is_captured:
+            ret, frame = video_capture.read()
+
+            face_locations = face_recognition.face_locations(frame)
+
+            for top, right, bottom, left in face_locations:
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+
+            cv2.imshow('Add New Face', frame)
+
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord('q'): break
+        elif key == 32:
+            is_captured = True
+            captured = frame
+
+            if len(face_locations) > 1:
+                is_captured = False
+                print("[Error] There is more than one face on the selected picture")
+                continue
+
+            cv2.destroyWindow('Add New Face')
+            cv2.imshow("Captured Face", captured)
+        elif key == ord('r'):
+            cv2.destroyWindow("Captured Face")
+            is_captured = False
+        elif key == ord('s'):
+            if not is_captured: continue
+
+            name = input("Save student with name: ")
+
+            try:
+                registy_object = face_registry.register(captured, name)
+                mysql_manager.save_encoding_to_class(classname, registy_object['encoding'], name)
+
+                break
+            except Exception as e:
+                print(e)
+        
+    video_capture.release()
+    cv2.destroyAllWindows()
+
+def execute(inputstring: str, classname: str):
+    args = shlex.split(inputstring)
+
+    match args[0]:
+        case 'help':
+            print("List of avaiable commands:")
+            print("- help")
+            print("- show")
+            print("- add")
+            print("- rename <id> <newname>")
+            print("- delete <id>")
+            print("- clear")
+            print("- exit")
+        case 'show':
+            print('\n')
+            print_list()
+        case 'add':
+            face = capture_face()
+        case 'rename':
+            id = int(args[1])
+            newname = args[2]
+
+            # pattern = r'\".*\"$' -> re.search(pattern, input).group()[1: -1]
+
+            mysql_manager.rename_student(classname, id, newname)
+
+            print_list()
+
+        case 'delete':
+            id = int(args[1])
+
+            mysql_manager.delete_student(classname, id)
+            
+            print_list()
+
+        case 'clear':
+            if input("Are you sure? (Y/n) ") == 'Y':
+                mysql_manager.clear_class(classname)
+                print("Class students successfully cleared!")
+
+        case _:
+            raise ValueError(
+                f"Command not found: '{args[0]}', run 'help' for avaiable commands")
+
+try:
+    classname = sys.argv[1]
+except IndexError:
+    print("\n  Edit Class:\n    Description:\n      View and edit students")
+    print("\n    Usage:\n      python edit_class <class>\n")
+    exit()
+
+print_list()
+
+while True:
+    command = input("> ")
+
+    if command in ['exit', 'q']: exit(0)
+
+    try:
+        execute(command, classname)
+    except Exception as e:
+        print(e)

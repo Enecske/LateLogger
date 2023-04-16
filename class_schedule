@@ -1,0 +1,148 @@
+import sys
+import shlex
+import scripts.mysql_manager as mysql_manager
+
+weekdays = ["", "Mon", "Tue", "Wed", "Thu", "Fri"]
+
+def print_schedule():
+    text = ""
+
+    for hour in range(8):
+        for day in range(6):
+            if hour == 0 and day == 0:
+                text += "  │"
+            elif day == 0 and hour != 0:
+                text += str(hour).ljust(2) + "│"
+            elif hour == 0:
+                text += str(weekdays[day]).center(7) + "│"
+            else:
+                lessonid = mysql_manager.get_lesson_by_time(day, hour)
+                lesson = mysql_manager.get_lesson_name(lessonid)
+                text += ((str(lessonid).ljust(3) + str(lesson).rjust(4)) if lesson != None else "       ") + "│"
+
+        text += "\n" if hour != 0 else ("\n" + "──┼───────┼───────┼───────┼───────┼───────┤" + "\n")
+
+    print(text)
+
+
+def execute(input: str):
+    args = shlex.split(input)
+
+    match args[0]:
+        case 'help':
+            print("List of avaiable commands:")
+            print("- help")
+            print("- show")
+            print("- add <day> <hour> <class>")
+            print("- modify <day> <hour> <class>")
+            print("- delete <day> <hour>")
+            print("- exit")
+        case 'show':
+            print('\n')
+            print_schedule()
+        case 'add':
+            day = int(args[1])
+            hour = int(args[2])
+            classname = args[3]
+
+            if day < 1 or day > 5:
+                raise ValueError(
+                    f"Invalid value for argument 'day' ({day}), value must be between 1 and 5")
+
+            if hour < 1 or hour > 7:
+                raise ValueError(
+                    f"Invalid value for argument 'hour' ({hour}), value must be between 1 and 7")
+
+            if len(classname) > 3:
+                raise ValueError(
+                    f"Invalid value for argument 'class' ({classname}), value must be no longer than 3 characters")
+
+            if mysql_manager.get_lesson_by_time(day, hour) != None:
+                raise ValueError(f"A lesson already exists at this time ({weekdays[day]}, " +
+                                 f"{hour}. hour), use 'modify' to modify existing lessons")
+
+            mysql_manager.add_lesson(day, hour, classname)
+            print_schedule()
+
+        case 'modify':
+            day = int(args[1])
+            hour = int(args[2])
+            classname = args[3]
+
+            if day < 1 or day > 5:
+                raise ValueError(
+                    f"Invalid value for argument 'day' ({day}), value must be between 1 and 5")
+
+            if hour < 1 or hour > 7:
+                raise ValueError(
+                    f"Invalid value for argument 'hour' ({hour}), value must be between 1 and 7")
+
+            if len(classname) > 3:
+                raise ValueError(
+                    f"Invalid value for argument 'class' ({classname}), value must be no longer than 3 characters")
+
+            if mysql_manager.get_lesson_by_time(day, hour) == None:
+                raise ValueError(f"No lesson exists at this time ({weekdays[day]}, " +
+                                 f"{hour}. hour), use 'add' to add lessons")
+
+            mysql_manager.modify_lesson(day, hour, classname)
+            print_schedule()
+
+        case 'delete':
+            day = int(args[1])
+            hour = int(args[2])
+
+            if day < 1 or day > 5:
+                raise ValueError(
+                    f"Invalid value for argument 'day' ({day}), value must be between 1 and 5")
+
+            if hour < 1 or hour > 7:
+                raise ValueError(
+                    f"Invalid value for argument 'hour' ({hour}), value must be between 1 and 7")
+
+            if mysql_manager.get_lesson_by_time(day, hour) == None:
+                raise ValueError(f"No lesson exists at this time ({weekdays[day]}, " +
+                                 f"{hour}. hour)")
+
+            mysql_manager.delete_lesson(day, hour)
+            print_schedule()
+
+        case _:
+            raise Exception(
+                f"Command not found: '{args[0]}', run 'help' for avaiable commands")
+
+
+try:
+    mode = sys.argv[1]
+    match mode:
+        case 'edit':
+            print("Edit class schedule\n")
+            print_schedule()
+
+            while True:
+                command = input("> ")
+
+                if command in ["exit", "q"]:
+                    exit(0)
+                try:
+                    execute(command)
+                except IndexError:
+                    print("Missing arguments")
+                except Exception as e:
+                    print(f"[Error] {e}")
+
+        case 'view':
+            print("View class schedule")
+            print_schedule()
+
+        case _:
+            raise IndexError
+
+except IndexError:
+    print("\n  Class Schedule:\n    Description:\n      View and edit class schedule")
+    print("\n    Usage:\n      python class_schedule <view|edit>\n")
+    exit(1)
+
+except Exception as e:
+    print(f"[Error] {e}")
+    exit(1)

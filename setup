@@ -1,0 +1,110 @@
+import socket
+import getpass
+import validators
+import os
+import mysql.connector as connector
+
+try:
+    print(
+    """Welcome to the LateLogger setup wizard!
+    Thank you for using our software!
+
+    First, we need to set up the database
+    You will need to install MySQL, as currently it is the only database management system supported by LateLogger
+
+    Create the database. Do not add any tables to your database!
+    After you're done with the basic database setup, answer the questions below
+    """
+    )
+    while True:
+        while True:
+            db_host = input("MySQL host: ")
+            try:
+                socket.gethostbyname(db_host)
+                break
+            except socket.error as e:
+                print(e)
+
+        while True:
+            db_user = input("MySQL username: ")
+            if db_user.replace('_', '').isalnum(): break
+            print("Add the username!" if db_user.replace('_', '') == "" 
+                else "You can only use alphanumerical characters and underscores!")
+            
+        db_password = getpass.getpass("MySQL user's password: ")
+        
+        while True:
+            db_name = input("Database's name: ")
+            if db_name.replace('_', '').isalnum(): break
+            print("Add the database's name!" if db_name.replace('_', '') == "" 
+                else "You can only use alphanumerical characters and underscores!")
+            
+        print("\nNow we'll configure some setting for the face recognition engine\n")
+
+        while True:
+            try:
+                tolerance = float(input("Face recognition's tolerance (0.6 by default): "))
+                break
+            except Exception as e:
+                print(e)
+        
+        while True:
+            try:
+                sensitivity = int(input("Face recognition's sensitivity (3 by default): "))
+                if sensitivity < 1 or sensitivity > 5:
+                    raise Exception("Sensitivity must be between 1 and 5")
+                break
+            except Exception as e:
+                print(e)
+
+        while True:
+            try:
+                inputsource = input("Camera's input source (0 by default): ")
+                match inputsource:
+                    case '0':
+                        inputsource = 0
+                        break
+                    case '1':
+                        inputsource = 1
+                        break
+                if os.path.isfile(inputsource): break
+
+                validators.url(inputsource)
+
+                break
+            except Exception:
+                print("Input source can only be 0 (default camera), 1 (secondary camera), a filename or an url to a file!")
+
+        f = open('conf.yaml', 'w')
+
+        f.write(f"database:\n    host: \"{db_host}\"\n    user: {db_user}\n    " + 
+                f"password: {db_password}\n    database: {db_name}\ntolerance: {tolerance}\nsensitivity: {sensitivity}\ninputsource: {inputsource}")
+
+        f.close()
+
+        try:
+            db = connector.connect(
+                host=db_host,
+                user=db_user,
+                password=db_password,
+                database=db_name
+            )
+        except connector.errors.ProgrammingError as e:
+            print(f"[MySQL Error] {e}, probably caused by config error\nRetrying...\n")
+        else:
+            break
+
+    print("Saved settings to conf.yaml")
+    cursor = db.cursor(buffered=True)
+
+    cursor.execute("SHOW TABLES LIKE 'class_schedule'")
+    if cursor.fetchone() == None:
+        print("No class schedule configuration found in the database!")
+        cursor.execute("CREATE TABLE class_schedule (lessonid INT NOT NULL AUTO_INCREMENT, class TINYTEXT NOT NULL, day BIT(5) NOT NULL, time BIT(7) NOT NULL, PRIMARY KEY(lessonid))")
+        print("Created table 'class_schedule'")
+
+    print("\nSetup finished!\nList of commands and scripts that can be used to configure LateLogger\n- python create_class <classname>\n" + 
+          "- python edit_class <classname>\n- python delete_class <classname>\n- python class_schedule <view|edit>\n" + 
+          "- python load_image <image> <name> <class>\n- python webcam_test\n\nStart LateLogger with 'python main.py [lessonid]'\n")
+except KeyboardInterrupt:
+    print("Setup cancelled")

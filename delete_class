@@ -1,0 +1,26 @@
+import sys
+from mysql.connector import ProgrammingError, errorcode
+
+import scripts.mysql_manager as mysql_manager
+
+try:
+    classname = sys.argv[1]
+
+    if not mysql_manager.does_class_exist(classname):
+        raise ValueError(f"Class {classname} does not exist")
+
+    if input("Are you sure? (Y/n) ") == 'Y':
+        mysql_manager.delete_class(classname)
+        print(f"Class {classname} successfully deleted!")
+
+except IndexError:
+    print("\n  Create class:\n    Description:\n      Create a new class")
+    print("\n    Usage:\n      python create_class <classname>\n")
+
+except ProgrammingError as e:
+    print(f"[MySQL Error] {e}")
+    exit(1)
+
+except Exception as e:
+    print(f"[Error] {e}")
+    exit(1)

@@ -1,0 +1,25 @@
+import sys
+import face_recognition
+import scripts.face_registry as face_registry
+import scripts.mysql_manager as mysql_manager
+
+args = sys.argv
+
+try:
+    filename = args[1]
+    name = args[2]
+    classname = args[3]
+
+    image = face_recognition.load_image_file(filename)
+    registy_object = face_registry.register(image, name)
+
+    mysql_manager.save_encoding_to_class(classname, registy_object['encoding'], name)
+
+
+except IndexError:
+    print("\n  Load image:\n    Description:\n      Load a new student into the selected class")
+    print("\n    Usage:\n      python load_image <filename> <name> <class>\n")
+
+except Exception as e:
+    print(f"[MySQL Error] {e}")
+    exit(1)

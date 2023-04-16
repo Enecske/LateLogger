@@ -1,0 +1,25 @@
+import sys
+from mysql.connector import ProgrammingError, errorcode
+
+import scripts.mysql_manager as mysql_manager
+
+try:
+    classname = sys.argv[1]
+
+    mysql_manager.create_class(classname)
+
+    print(f"Class {classname} successfully created!")
+
+except IndexError:
+    print("\n  Create class:\n    Description:\n      Create a new class")
+    print("\n    Usage:\n      python create_class <classname>\n")
+    
+except ProgrammingError as e:
+    if e.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+        print(f"[Argument Error] Class {classname} already exists, use 'python edit_class' to edit existing class")
+    else:
+        print(f"[MySQL Error]: {e}")
+
+except Exception as e:
+    print(f"[Error] {e}")
+    exit(1)

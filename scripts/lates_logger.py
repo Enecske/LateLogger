@@ -1,5 +1,5 @@
 import os
-import mysql_manager
+from scripts import mysql_manager
 
 lates = []
 

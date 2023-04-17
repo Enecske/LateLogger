@@ -1,5 +1,5 @@
 import mysql.connector
-import face_registry
+from scripts import face_registry
 import yaml
 import numpy
 

@@ -1,14 +1,10 @@
 import cv2
 import numpy as np
-import mysql_manager
 from PIL import ImageFont, ImageDraw, Image
 import yaml
 
-import util
 import face_recognition
-import face_registry
-import time_manager
-import lates_logger
+from scripts import time_manager, mysql_manager, face_registry, util, lates_logger
 
 def start_webcam(lessonid: int):
     tolerance = 0.6
@@ -117,6 +113,7 @@ def start_webcam(lessonid: int):
             paused = not paused
             print(("Paused" if paused else "Resumed") + " face recognition!")
         if key == ord('q'):
+            lates_logger.log()
             exit(0)
         if time_manager.is_end():
             break

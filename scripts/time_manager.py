@@ -1,15 +1,15 @@
 from datetime import *
-import mysql_manager
+from scripts import mysql_manager
 
 lesson_times = [(8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 15)]
 lesson_starts = [(7, 45), (8, 45), (9, 45), (10, 45), (11, 45), (12, 45), (13, 45)]
 lesson_ends = [(8, 45), (9, 45), (10, 45), (11, 45), (12, 45), (13, 45), (15, 0)]
 
-shift = (1, 49)
+shift: tuple[int, int] = (0, 0)
 
 def shift_time(time: datetime, shift: tuple[int, int]):
-    hour = time.hour - shift[0]
-    minute = time.minute - shift[1]
+    hour = time.hour + shift[0]
+    minute = time.minute + shift[1]
 
     while minute < 0:
         minute += 60

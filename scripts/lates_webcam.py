@@ -6,7 +6,7 @@ import yaml
 import face_recognition
 from scripts import time_manager, mysql_manager, face_registry, util, lates_logger
 
-def start_webcam(lessonid: int):
+def start_webcam(lessonid: int, auto_shutdown: bool):
     tolerance = 0.6
     inputsource = 0
     sensitivity = 3
@@ -115,7 +115,7 @@ def start_webcam(lessonid: int):
         if key == ord('q'):
             lates_logger.log()
             exit(0)
-        if time_manager.is_end():
+        if time_manager.is_end() and auto_shutdown:
             break
 
     video_capture.release()

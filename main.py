@@ -63,7 +63,7 @@ while True:
                 print(f"[MySQL Error] {str(e)}")
                 exit(1)
 
-        lates_webcam.start_webcam(lessonid, mode == 'setlesson')
+        lates_webcam.start_webcam(lessonid, mode != 'setlesson')
     except KeyboardInterrupt:
         print(" Keyboard Interrupt - LateLogger stopped")
         exit(0)

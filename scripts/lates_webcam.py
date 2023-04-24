@@ -18,13 +18,13 @@ def start_webcam(lessonid: int, auto_shutdown: bool):
         sensitivity = int(config['sensitivity'])
         
     except Exception as e:
-        print(f"[Config Error] {e}, using default tolerance level ({tolerance})")
+        print(f"[Config Error] {e}, using default values")
         
     video_capture = cv2.VideoCapture(inputsource)
 
     mysql_manager.load_all(lessonid)
 
-    detected_faces = []
+    detected_faces: list[tuple[str, int]] = []
     for student in face_registry.known_face_names:
         detected_faces.append((student, -1))
 
@@ -73,10 +73,13 @@ def start_webcam(lessonid: int, auto_shutdown: bool):
                     name = face_registry.known_face_names[best_match_index]
 
                     i = util.find_tuple(detections_left, 0, name)
+                    j = util.find_tuple(detected_faces, 0, name)
                     if detections_left[i][1] > 0: detections_left[i] = (name, detections_left[i][1] - 1)
                     elif detections_left[i][1] == 0: 
                         detections_left[i] = (name, -1)
-                        lates_logger.save(name, time_manager.get_latency(lessonid))
+                        minutes = util.clamp(time_manager.get_latency(lessonid), 0, 45)
+                        detected_faces[j] = (name, minutes)
+                        print(name + " arrived in time!" if minutes < 2 else name + " is " + str(minutes) + " minutes late!")
 
                 face_names.append(name)
 
@@ -113,7 +116,7 @@ def start_webcam(lessonid: int, auto_shutdown: bool):
             paused = not paused
             print(("Paused" if paused else "Resumed") + " face recognition!")
         if key == ord('q'):
-            lates_logger.log()
+            lates_logger.log(mysql_manager.get_lesson_name(lessonid), detected_faces)
             exit(0)
         if time_manager.is_end() and auto_shutdown:
             break
@@ -121,4 +124,4 @@ def start_webcam(lessonid: int, auto_shutdown: bool):
     video_capture.release()
     cv2.destroyAllWindows()
 
-    lates_logger.log()
+    lates_logger.log(mysql_manager.get_lesson_name(lessonid), detected_faces)

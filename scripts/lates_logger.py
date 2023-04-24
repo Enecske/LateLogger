@@ -1,22 +1,14 @@
-import os
-from scripts import mysql_manager
+import json
 
-lates = []
+def log(lesson: str, array: list[tuple[str, int]]):
+    students = []
+    for (student, lateness) in array:
+        students.append({'name': student, 'lateness': lateness})
 
-def save(name: str, minutes: int):
-    saved = None
+    json_object = {
+        'class': lesson,
+        'students': students
+    }
 
-    for x in lates:
-        if x.get("name") == name:
-            saved = name
-            break
-
-    if saved == None:
-        print(name + " arrived in time!" if minutes < 2 else name + " is " + str(minutes) + " minutes late!")
-        lates.append({"name": name, "latency": minutes})
-
-def log():
-    f = open("lates.json", "w")
-
-    f.write('{"lates": ' + str(lates).replace('\'', '"') + '}')
-    f.close()
+    with open("lates.json", "w", encoding='utf-8') as f:
+        json.dump(json_object, f, ensure_ascii=False, indent=4)

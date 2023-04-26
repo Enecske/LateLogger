@@ -43,7 +43,7 @@ def get_lesson():
 
     return lesson
 
-def get_latency(lessonid: int):
+def get_lateness(lessonid: int):
     lesson = mysql_manager.get_lesson_time(lessonid)[1] - 1
 
     shifted = shift_time(datetime.now(), shift)

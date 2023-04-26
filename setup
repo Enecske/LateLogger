@@ -84,10 +84,10 @@ try:
 
         try:
             db = connector.connect(
-                host=db_host,
-                user=db_user,
-                password=db_password,
-                database=db_name
+                host = db_host,
+                user = db_user,
+                password = db_password,
+                database = db_name
             )
         except connector.errors.ProgrammingError as e:
             print(f"[MySQL Error] {e}, probably caused by config error\nRetrying...\n")
@@ -100,7 +100,7 @@ try:
     cursor.execute("SHOW TABLES LIKE 'class_schedule'")
     if cursor.fetchone() == None:
         print("No class schedule configuration found in the database!")
-        cursor.execute("CREATE TABLE class_schedule (lessonid INT NOT NULL AUTO_INCREMENT, class TINYTEXT NOT NULL, day BIT(5) NOT NULL, time BIT(7) NOT NULL, PRIMARY KEY(lessonid))")
+        cursor.execute("CREATE TABLE class_schedule (lessonid INT NOT NULL AUTO_INCREMENT, class TINYTEXT NOT NULL, day BIT(5) NOT NULL, hour BIT(7) NOT NULL, PRIMARY KEY(lessonid))")
         print("Created table 'class_schedule'")
 
     print("\nSetup finished!\nList of commands and scripts that can be used to configure LateLogger\n- python create_class <classname>\n" + 

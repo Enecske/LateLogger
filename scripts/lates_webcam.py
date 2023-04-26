@@ -77,7 +77,7 @@ def start_webcam(lessonid: int, auto_shutdown: bool):
                     if detections_left[i][1] > 0: detections_left[i] = (name, detections_left[i][1] - 1)
                     elif detections_left[i][1] == 0: 
                         detections_left[i] = (name, -1)
-                        minutes = util.clamp(time_manager.get_latency(lessonid), 0, 45)
+                        minutes = util.clamp(time_manager.get_lateness(lessonid), 0, 45)
                         detected_faces[j] = (name, minutes)
                         print(name + " arrived in time!" if minutes < 2 else name + " is " + str(minutes) + " minutes late!")
 

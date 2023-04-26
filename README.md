@@ -1,5 +1,5 @@
 # LateLogger
-**A student latency logger system for schools, written in Python**
+**A student lateness logger system for schools, written in Python**
 
 ## Features
 #### Find students using a webcam

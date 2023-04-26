@@ -104,13 +104,13 @@ def get_lesson_name(lessonid: int):
 
 def get_lesson_time(lessonid: int):
     cursor.execute(
-        f"SELECT day,time FROM class_schedule WHERE lessonid={lessonid}")
+        f"SELECT day,hour FROM class_schedule WHERE lessonid={lessonid}")
     return cursor.fetchone()
 
 
-def get_lesson_by_time(day: int, time: int):
+def get_lesson_by_time(day: int, hour: int):
     cursor.execute(
-        f"SELECT lessonid FROM class_schedule WHERE day={day} AND time={time}")
+        f"SELECT lessonid FROM class_schedule WHERE day={day} AND hour={hour}")
     try:
         return cursor.fetchone()[0]
     except:
@@ -119,19 +119,19 @@ def get_lesson_by_time(day: int, time: int):
 
 def add_lesson(day: int, hour: int, classname: str):
     cursor.execute(
-        f"INSERT INTO class_schedule (class, day, time) VALUES (%s, %s, %s)", (classname, day, hour))
+        f"INSERT INTO class_schedule (class, day, hour) VALUES (%s, %s, %s)", (classname, day, hour))
     db.commit()
 
 
 def modify_lesson(day: int, hour: int, classname: str):
     cursor.execute(
-        f"UPDATE class_schedule SET class=\"{classname}\" WHERE day={day} AND time={hour}")
+        f"UPDATE class_schedule SET class=\"{classname}\" WHERE day={day} AND hour={hour}")
     db.commit()
 
 
 def delete_lesson(day: int, hour: int):
     cursor.execute(
-        f"DELETE FROM class_schedule WHERE day={day} AND time={hour}")
+        f"DELETE FROM class_schedule WHERE day={day} AND hour={hour}")
     db.commit()
 
 def create_class(classname: str):

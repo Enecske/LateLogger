@@ -41,8 +41,12 @@ python --version
 ```
 *NOTE: If you have multiple versions of Python installed, you may need to use `python3` instead of `python` in bash shells*
 
-Then, install [face_recognition](https://github.com/ageitgey/face_recognition), `validators` and `events` by running
+Then, install the required packages by running
+```bash
+pip install -r requirements.txt
+```
 
+Or, you can install them individually
 ```bash
 pip install face_recongition
 pip install validators

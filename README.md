@@ -41,23 +41,21 @@ python --version
 ```
 *NOTE: If you have multiple versions of Python installed, you may need to use `python3` instead of `python` in bash shells*
 
+Download this repository with
+```bash
+git clone https://github.com/Enecske/LateLogger
+```
+
 Then, install the required packages by running
 ```bash
 pip install -r requirements.txt
 ```
-
 Or, you can install them individually
 ```bash
 pip install face_recongition
 pip install validators
 pip install events
 ```
-
-Finally, download this repository by running
-```bash
-git clone https://github.com/Enecske/LateLogger
-```
-in the target folder.
 
 ### Setting LateLogger up
 Set up LateLogger by running

@@ -4,9 +4,11 @@ from PIL import ImageFont, ImageDraw, Image
 import yaml
 
 import face_recognition
-from scripts import time_manager, mysql_manager, face_registry, util, lates_logger
+from scripts import time_manager, mysql_manager, face_registry, util, lates_logger, event_manager
 
 def start_webcam(lessonid: int, auto_shutdown: bool):
+    event_manager.__events.lesson_started(lessonid)
+
     tolerance = 0.6
     inputsource = 0
     sensitivity = 3
@@ -119,6 +121,7 @@ def start_webcam(lessonid: int, auto_shutdown: bool):
             lates_logger.log(mysql_manager.get_lesson_name(lessonid), detected_faces)
             exit(0)
         if time_manager.is_end() and auto_shutdown:
+            event_manager.__events.lesson_end(lessonid)
             break
 
     video_capture.release()

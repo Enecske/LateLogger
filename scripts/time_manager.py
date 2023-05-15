@@ -1,5 +1,5 @@
 from datetime import *
-from scripts import mysql_manager
+from scripts import mysql_manager, event_manager
 
 lesson_times = [(8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 15)]
 lesson_starts = [(7, 45), (8, 45), (9, 45), (10, 45), (11, 45), (12, 45), (13, 45)]
@@ -27,6 +27,7 @@ def get_lesson():
 
     if current >= lesson_ends[-1][1] + (lesson_ends[-1][0] * 60):
         print("Today's lessons ended, shutting LateLogger down... Goodbye!")
+        event_manager.__events.shutdown()
         exit(0)
 
     min_dist = 100

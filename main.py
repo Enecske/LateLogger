@@ -1,5 +1,5 @@
 from datetime import *
-from scripts import lates_webcam, time_manager, mysql_manager
+from scripts import lates_webcam, time_manager, mysql_manager, event_manager
 import sys
 from mysql.connector import ProgrammingError
 
